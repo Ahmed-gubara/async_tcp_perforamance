@@ -37,6 +37,16 @@ func handleConnection(c net.Conn) {
 	}
 	c.Close()
 }
+func findLongestString(s string) string {
+	chars := []rune(s)
+	chars_map := make(map[rune]int)
+	for i := 0; i < len(chars); i++ {
+		char := chars[i]
+
+		chars_map[char] = i
+	}
+	return s[0:3]
+}
 
 func main() {
 	arguments := os.Args
