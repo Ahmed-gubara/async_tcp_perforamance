@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -24,12 +25,13 @@ class Char
                 var count = 0;
                 using NetworkStream networkStream = tcpClient.GetStream();
                 using var _ = tcpClient;
-                var charIndexes = new int[char.MaxValue];
-                for (int i = 0; i < charIndexes.Length; i++)
-                {
-                    charIndexes[i] = -1;
-                }
+                // var charIndexes = new int[char.MaxValue];
+                // for (int i = 0; i < charIndexes.Length; i++)
+                // {
+                //     charIndexes[i] = -1;
+                // }
                 var buf = new byte[10240];
+                var reader = new StreamReader(networkStream);
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 while (true)
                 {
@@ -92,23 +94,29 @@ class Char
                 // var charIndexes = new int[char.MaxValue];
                 var buf = new byte[10240];
                 Stopwatch stopwatch = Stopwatch.StartNew();
+                var reader = new StreamReader(networkStream);
                 while (true)
                 {
                     // Console.WriteLine('1');
-                    int v = 0;
+                    // int v = 0;
+                    string str;
                     try
                     {
-                        v = await networkStream.ReadAsync(buf);
+                        str = await reader.ReadLineAsync();
                     }
-                    catch { v = 0; }
+                    catch
+                    {
+                        // v = 0;
+                        str = null;
+                    }
                     // Console.WriteLine('2');
 
-                    if (v == 0)
+                    if (string.IsNullOrEmpty(str))
                     {
                         Console.WriteLine($"Disconnected , toke {x * 1_000_000_000.0 / count} ms");
                         break;
                     }
-                    var str = Encoding.UTF8.GetString(buf, 0, v);
+                    // var str = Encoding.UTF8.GetString(buf, 0, v);
                     // Console.WriteLine(str);
                     // Console.WriteLine("Recieved " + v);
                     stopwatch.Reset();
@@ -116,7 +124,7 @@ class Char
                     string result = Find(str) + "\n";
                     x += stopwatch.Elapsed.TotalSeconds;
                     count += 1;
-                    v = Encoding.UTF8.GetBytes(result, buf);
+                    var v = Encoding.UTF8.GetBytes(result, buf);
                     await networkStream.WriteAsync(buf.AsMemory(0, v));
                     // await networkStream.FlushAsync();
                 }

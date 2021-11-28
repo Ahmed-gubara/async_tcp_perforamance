@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
-	"os"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -20,42 +17,64 @@ func random() int {
 
 func handleConnection(c net.Conn) {
 	fmt.Printf("Serving %s\n", c.RemoteAddr().String())
+	defer c.Close()
+	reader := bufio.NewReader(c)
 	for {
-		netData, err := bufio.NewReader(c).ReadString('\n')
+		netData, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-
-		temp := strings.TrimSpace(string(netData))
-		if temp == "STOP" {
-			break
-		}
-
-		result := strconv.Itoa(random()) + "\n"
-		c.Write([]byte(string(result)))
+		// fmt.Printf("recived %d\n", len(netData))
+		result := findLongestString(netData) + "\n"
+		c.Write([]byte(result))
 	}
-	c.Close()
 }
 func findLongestString(s string) string {
 	chars := []rune(s)
-	chars_map := make(map[rune]int)
-	for i := 0; i < len(chars); i++ {
+	leng := len(chars)
+	charIndexes := make(map[rune]int)
+	matchIndex := 0
+	matchLength := 0
+	index := 0
+	for i := 0; i < leng; i++ {
 		char := chars[i]
+		charIndex, charExist := charIndexes[char]
+		if charExist && charIndex >= index {
+		} else {
+			charExist = false
+		}
+		isTheEnd := charIndex == leng-1
 
-		chars_map[char] = i
+		if charExist || isTheEnd {
+			length := charIndex - index
+
+			if !charExist {
+				length++
+			}
+			if length > matchLength {
+				matchIndex = index
+				matchLength = length
+			}
+			if charExist {
+				index = charIndexes[char] + 1
+			}
+		}
+
+		charIndexes[char] = i
 	}
-	return s[0:3]
+	return string(chars[matchIndex : matchIndex+matchLength])
+
 }
 
 func main() {
-	arguments := os.Args
-	if len(arguments) == 1 {
-		fmt.Println("Please provide a port number!")
-		return
-	}
+	// arguments := os.Args
+	// if len(arguments) == 1 {
+	// 	fmt.Println("Please provide a port number!")
+	// 	return
+	// }
 
-	PORT := ":" + arguments[1]
+	PORT := ":8080"
 	l, err := net.Listen("tcp4", PORT)
 	if err != nil {
 		fmt.Println(err)
@@ -63,7 +82,7 @@ func main() {
 	}
 	defer l.Close()
 	rand.Seed(time.Now().Unix())
-
+	fmt.Println("Waiting for connection!")
 	for {
 		c, err := l.Accept()
 		if err != nil {

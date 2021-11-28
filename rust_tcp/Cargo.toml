@@ -18,6 +18,6 @@ rpath = false
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-jemallocator = "0.3.2"
+# jemallocator = "0.3.2"
 # bumpalo  = { version = "3.8.0", features = ["collections","boxed"] }
 async-std = "1.10.0"

@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "YpHb4GwK1m92TIx9Jt1+Qj3U1+Eb+NNS3kib/xUk39/zRTHbYc0oHwplVDjSwQzp6PmLQ19f+DmJKSJkob55MA==",
+  "dgSpecHash": "UuP+CtbqY9LgyAoII/OI2nnaCXp///4EHPRsFgz0P0VE3tz3z8EAnUNZX5wR++o+3gJu4rlUCpzaXUC9cc1jgw==",
   "success": true,
   "projectFilePath": "C:\\Users\\ahmed\\Documents\\GitHub\\async_tcp_perforamance\\DotnetTcp\\DotnetTcp.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\ahmed\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\5.0.12\\microsoft.netcore.app.host.win-x64.5.0.12.nupkg.sha512"
+  ],
   "logs": []
 }
