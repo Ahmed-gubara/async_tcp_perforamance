@@ -6,7 +6,7 @@ namespace DotnetTcp
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Char.ServerAsync().Wait();
         }
     }
 }
