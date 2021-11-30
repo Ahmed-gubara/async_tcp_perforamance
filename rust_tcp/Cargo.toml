@@ -6,7 +6,7 @@ edition="2021"
 
 [profile.release]
 opt-level = 3
-debug = true
+debug = false
 # split-debuginfo = '...'  # Platform-specific.
 debug-assertions = false
 overflow-checks = false
@@ -21,3 +21,5 @@ tokio = { version = "1", features = ["full"] }
 # jemallocator = "0.3.2"
 # bumpalo  = { version = "3.8.0", features = ["collections","boxed"] }
 async-std = "1.10.0"
+
+
