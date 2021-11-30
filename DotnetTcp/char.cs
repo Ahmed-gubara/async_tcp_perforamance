@@ -46,7 +46,7 @@ class Char
 
                     if (v == 0)
                     {
-                        Console.WriteLine($"Disconnected , toke {x * 1_000_000_000.0 / count} ms");
+                        // Console.WriteLine($"Disconnected , toke {x * 1_000_000_000.0 / count} ms");
                         break;
                     }
                     var str = Encoding.UTF8.GetString(buf, 0, v);
@@ -78,7 +78,7 @@ class Char
         while (true)
         {
             TcpClient tcpClient = tcpListener.AcceptTcpClient();
-            Console.WriteLine("recived connection ");
+            // Console.WriteLine("recived connection ");
             tcpClient.NoDelay = true;
 
             Task.Run(async () =>
@@ -113,7 +113,7 @@ class Char
 
                     if (string.IsNullOrEmpty(str))
                     {
-                        Console.WriteLine($"Disconnected , toke {x * 1_000_000_000.0 / count} ms");
+                        // Console.WriteLine($"Disconnected , toke {x * 1_000_000_000.0 / count} ms");
                         break;
                     }
                     // var str = Encoding.UTF8.GetString(buf, 0, v);

@@ -16,13 +16,13 @@ func random() int {
 }
 
 func handleConnection(c net.Conn) {
-	fmt.Printf("Serving %s\n", c.RemoteAddr().String())
+	// fmt.Printf("Serving %s\n", c.RemoteAddr().String())
 	defer c.Close()
 	reader := bufio.NewReader(c)
 	for {
 		netData, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println(err)
+			// fmt.Println(err)
 			return
 		}
 		// fmt.Printf("recived %d\n", len(netData))
@@ -86,7 +86,7 @@ func main() {
 	for {
 		c, err := l.Accept()
 		if err != nil {
-			fmt.Println(err)
+			// fmt.Println(err)
 			return
 		}
 		go handleConnection(c)
