@@ -32,10 +32,11 @@ struct Dur {
     min: Duration,
     total: Duration,
     rounds: u128,
+    ignored: u128,
 }
 impl Display for Dur {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let avg = self.total.as_nanos() / (self.rounds - 50000);
+        let avg = self.avarage();
 
         write!(
             f,
@@ -53,7 +54,24 @@ impl Dur {
             min: Duration::MAX,
             total: Duration::ZERO,
             rounds: 0,
+            ignored: 50,
         }
+    }
+    fn add(&mut self, duration: Duration) {
+        self.rounds += 1;
+        if self.rounds < self.ignored {
+            return;
+        }
+        if duration > self.max {
+            self.max = duration;
+        }
+        if duration < self.min {
+            self.min = duration;
+        }
+        self.total += duration;
+    }
+    fn avarage(&self) -> u128 {
+        self.total.as_nanos() / (self.rounds - self.ignored)
     }
     fn run<T>(&mut self, call: fn() -> T) {
         self.rounds += 1;
@@ -89,48 +107,46 @@ async fn main_async_std() -> Result<(), Box<dyn Error>> {
         for thread_id in 1..=tasks.capacity() {
             let tc = tasks.capacity();
             let join = task::spawn(async move {
-                let begin = Instant::now();
                 let mut timer = Instant::now();
 
-                {
-                    // println!("len {}", s.len());
-                    let mut buf = String::with_capacity(1024);
-                    let mut tcp = TcpStream::connect("127.0.0.1:8080")
-                        .await
-                        .expect("Can't connect");
-                    tcp.set_nodelay(true).unwrap();
-                    let mut writer = BufWriter::new(tcp.clone());
-                    let mut reader = BufReader::new(tcp.clone());
-                    // let mut writer=BufWriter::new(tcp_write);
-                    // const INTERVAL: u32 = 1_000;
-                    for x in 0..TOTAL {
-                        writer.write_all(S.as_bytes()).await.unwrap();
-                        writer.flush().await.unwrap();
-                        // writeln!(writer, "{}", s).expect("Can't write");
-                        // tcp.flush().expect("flushheee!");
-                        buf.clear();
-                        let c = reader.read_line(&mut buf).await.expect("Can't read");
-                        // dbg!(c);
-                        if x % INTERVAL == 0 {
-                            let elapsed = timer.elapsed();
-                            // println!(
-                            //     "T:{:2},{:7} , {} ms, {} microSecond/op, {} op/s   <{}>",
-                            //     thread_id,
-                            //     x,
-                            //     elapsed.as_millis(),
-                            //     elapsed.as_micros() / INTERVAL as u128,
-                            //     (INTERVAL as f64 / elapsed.as_secs_f64()) as u128,
-                            //     (INTERVAL as f64 / elapsed.as_secs_f64()) as u128 * tc as u128
-                            // );
-                            timer = Instant::now();
-                        }
+                // println!("len {}", s.len());
+                let mut buf = String::with_capacity(1024);
+                let mut tcp = TcpStream::connect("127.0.0.1:8080")
+                    .await
+                    .expect("Can't connect");
+                tcp.set_nodelay(true).unwrap();
+                let mut writer = BufWriter::new(tcp.clone());
+                let mut reader = BufReader::new(tcp.clone());
+                // let mut writer=BufWriter::new(tcp_write);
+                // const INTERVAL: u32 = 1_000;
+                for x in 0..TOTAL {
+                    writer.write_all(S.as_bytes()).await.unwrap();
+                    writer.flush().await.unwrap();
+                    // writeln!(writer, "{}", s).expect("Can't write");
+                    // tcp.flush().expect("flushheee!");
+                    buf.clear();
+                    let c = reader.read_line(&mut buf).await.expect("Can't read");
+                    // dbg!(c);
+                    if x % INTERVAL == 0 {
+                        let elapsed = timer.elapsed();
+                        // println!(
+                        //     "T:{:2},{:7} , {} ms, {} microSecond/op, {} op/s   <{}>",
+                        //     thread_id,
+                        //     x,
+                        //     elapsed.as_millis(),
+                        //     elapsed.as_micros() / INTERVAL as u128,
+                        //     (INTERVAL as f64 / elapsed.as_secs_f64()) as u128,
+                        //     (INTERVAL as f64 / elapsed.as_secs_f64()) as u128 * tc as u128
+                        // );
+                        timer = Instant::now();
+                    }
 
-                        if (c != 0 && x == 0) {
-                            // println!("received [{}]", buf);
-                            // stdout().flush();
-                        }
+                    if (c != 0 && x == 0) {
+                        // println!("received [{}]", buf);
+                        // stdout().flush();
                     }
                 }
+
                 let end = Instant::now();
                 // println!(
                 //     "T:{},avg:{:?}",
@@ -233,17 +249,24 @@ fn main() {
         //     .enable_all()
         //     .build()
         //     .unwrap();
-        tokio::runtime::Builder::new_multi_thread()
-            .worker_threads(16)
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(main_tokio())
+        match args().nth(1) {
+            None => tokio::runtime::Builder::new_current_thread()
+                // .worker_threads(32)
+                .enable_all()
+                .build()
+                .unwrap(),
+            _ => tokio::runtime::Builder::new_multi_thread()
+                // .worker_threads(32)
+                .enable_all()
+                .build()
+                .unwrap(),
+        }
+        .block_on(main_tokio())
     }
 }
-const NO_OF_TASKS: usize = 10;
+const NO_OF_TASKS: usize = 100;
 const INTERVAL: u32 = 100_000;
-const TOTAL: u32 = 100_000;
+const TOTAL: u32 = 10_000;
 const S:&str= "You might encounter someone with a computer science background preferring to use the term hash table. Perl and Ruby strip that off and call them hashes. Lua does the opposite and uses the term table. Many communities name the structure after a metaphor, such as a dictionary (one term is being associated with a “definition”) or a map (programmers, following mathematicians, are mapping from one value to another). Other communities prefer naming based on the role that the structure plays. PHP describes them as associative arrays. JavaScript’s objects tend to be implemented as a key/value pair collection and so generic term object suffices. Static languages tend to name them according to how they are implemented. C++ and Java distinguish between a hash map and a tree map.\
 Rust uses the terms HashMap and BTreeMap to define two i and “associative array” refer to the abstract data type. “Hash table” refers to associative arrays implemented with a hash table. HashMaprefers to Rust’s implementation of hash tables.\
 You might encounter someone with a computer science bacmplementations of the same abstract data type. Rust is closest to C++ and Java in this regard.\
@@ -269,66 +292,82 @@ pub async fn main_tokio() {
             let join = tokio::spawn(async move {
                 let begin = Instant::now();
                 let mut timer = Instant::now();
-
-                {
-                    // println!("len {}", s.len());
-                    // let mut buf = String::with_capacity(1024);
-                    let mut buf = vec![0; 1024];
-                    let mut tcp = TcpStream::connect("127.0.0.1:8080")
+                let mut dur = Dur::new();
+                // println!("len {}", s.len());
+                // let mut buf = String::with_capacity(1024);
+                let mut buf = vec![0; 1024];
+                let mut tcp = TcpStream::connect("127.0.0.1:8080")
+                    .await
+                    .expect("Can't connect");
+                tcp.set_nodelay(true).unwrap();
+                // let mut writer = BufWriter::new(tcp.try_clone());
+                let (reader, mut writer) = tcp.split();
+                let mut reader = BufReader::new(reader);
+                // let mut writer = BufWriter::new(writer);
+                // let mut writer=BufWriter::new(tcp_write);
+                for x in 0..TOTAL {
+                    let mut t = Instant::now();
+                    writer.write_all(S.as_bytes()).await.unwrap();
+                    dur.add(t.elapsed());
+                    buf.clear();
+                    let c = reader
+                        .read_until(b'\n', &mut buf)
                         .await
-                        .expect("Can't connect");
-                    tcp.set_nodelay(true).unwrap();
-                    // let mut writer = BufWriter::new(tcp.try_clone());
-                    let (reader, mut writer) = tcp.split();
-                    let mut reader = BufReader::new(reader);
-                    // let mut writer = BufWriter::new(writer);
-                    // let mut writer=BufWriter::new(tcp_write);
-                    for x in 0..TOTAL {
-                        writer.write_all(S.as_bytes()).await.unwrap();
-                        // writer.flush().await.unwrap();
-                        // writeln!(writer, "{}", s).expect("Can't write");
-                        // tcp.flush().expect("flushheee!");
-                        buf.clear();
-                        let c = reader
-                            .read_until(b'\n', &mut buf)
-                            .await
-                            .expect("Can't read");
-                        // dbg!(c);
-                        if x % INTERVAL == 0 {
-                            let elapsed = timer.elapsed();
-                            // println!(
-                            //     "T:{:2},{:7} , {} ms, {} microSecond/op, {} op/s   <{}>",
-                            //     thread_id,
-                            //     x,
-                            //     elapsed.as_millis(),
-                            //     elapsed.as_micros() / INTERVAL as u128,
-                            //     (INTERVAL as f64 / elapsed.as_secs_f64()) as u128,
-                            //     (INTERVAL as f64 / elapsed.as_secs_f64()) as u128 * tc as u128
-                            // );
-                            timer = Instant::now();
-                        }
+                        .expect("Can't read");
+                    // dbg!(c);
+                    if x % INTERVAL == 0 {
+                        let elapsed = timer.elapsed();
+                        // println!(
+                        //     "T:{:2},{:7} , {} ms, {} microSecond/op, {} op/s   <{}>",
+                        //     thread_id,
+                        //     x,
+                        //     elapsed.as_millis(),
+                        //     elapsed.as_micros() / INTERVAL as u128,
+                        //     (INTERVAL as f64 / elapsed.as_secs_f64()) as u128,
+                        //     (INTERVAL as f64 / elapsed.as_secs_f64()) as u128 * tc as u128
+                        // );
+                        timer = Instant::now();
+                    }
 
-                        if (c != 0 && x == 0) {
-                            // println!("received [{}]", String::from_utf8_lossy(&buf));
-                            // stdout().flush();
-                        }
+                    if (c != 0 && x == 0) {
+                        // println!("received [{}]", String::from_utf8_lossy(&buf));
+                        // stdout().flush();
                     }
                 }
+
                 let end = Instant::now();
                 // println!(
                 //     "T:{},avg:{:?}",
                 //     thread_id,
                 //     end.duration_since(begin) / 4_000
                 // );
+                dur
             });
             tasks.push(join);
             // threads.push(thread);
         }
+        let mut _min = Duration::ZERO;
+        let mut _max = Duration::ZERO;
+        let mut _total = 0u128;
         for task in tasks {
-            task.await.unwrap();
+            let dur = task.await.unwrap();
+            if dur.min > _min {
+                _min = dur.min;
+            }
+            if dur.max > _max {
+                _max = dur.max;
+            }
+            _total += dur.avarage();
         }
+        _total /= NO_OF_TASKS as u128;
         let x = ((NO_OF_TASKS * TOTAL as usize) as f64 / starting.elapsed().as_secs_f64()) as usize;
         println!("toke {:?} , {} op/s", starting.elapsed(), x);
+        println!(
+            "min {:?}. max {:?}. avg {:?}",
+            _min,
+            _max,
+            Duration::from_nanos(_total.try_into().unwrap())
+        );
     }
     if arg.is_some() {
         let tcp = TcpListener::bind("127.0.0.1:8080").await.unwrap();
