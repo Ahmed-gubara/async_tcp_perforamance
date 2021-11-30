@@ -264,9 +264,9 @@ fn main() {
         .block_on(main_tokio())
     }
 }
-const NO_OF_TASKS: usize = 20;
+const NO_OF_TASKS: usize = 200;
+const TOTAL: u32 = 10_000;
 const INTERVAL: u32 = 100_000;
-const TOTAL: u32 = 100_000;
 const S:&str= "You might encounter someone with a computer science background preferring to use the term hash table. Perl and Ruby strip that off and call them hashes. Lua does the opposite and uses the term table. Many communities name the structure after a metaphor, such as a dictionary (one term is being associated with a “definition”) or a map (programmers, following mathematicians, are mapping from one value to another). Other communities prefer naming based on the role that the structure plays. PHP describes them as associative arrays. JavaScript’s objects tend to be implemented as a key/value pair collection and so generic term object suffices. Static languages tend to name them according to how they are implemented. C++ and Java distinguish between a hash map and a tree map.\
 Rust uses the terms HashMap and BTreeMap to define two i and “associative array” refer to the abstract data type. “Hash table” refers to associative arrays implemented with a hash table. HashMaprefers to Rust’s implementation of hash tables.\
 You might encounter someone with a computer science bacmplementations of the same abstract data type. Rust is closest to C++ and Java in this regard.\
@@ -308,12 +308,13 @@ pub async fn main_tokio() {
                 for x in 0..TOTAL {
                     let mut t = Instant::now();
                     writer.write_all(S.as_bytes()).await.unwrap();
-                    dur.add(t.elapsed());
                     buf.clear();
                     let c = reader
                         .read_until(b'\n', &mut buf)
                         .await
                         .expect("Can't read");
+                    dur.add(t.elapsed());
+
                     // dbg!(c);
                     if x % INTERVAL == 0 {
                         let elapsed = timer.elapsed();
