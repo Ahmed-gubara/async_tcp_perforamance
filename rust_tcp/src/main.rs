@@ -18,7 +18,7 @@ use std::{
     error::Error,
     fmt::{Debug, Display},
     io::{stdin, stdout, Write},
-    ops::{Add, DerefMut, Mul},
+    ops::{Add, DerefMut, Div, Mul},
     string,
     sync::{atomic::AtomicUsize, Arc},
     time::Duration,
@@ -99,10 +99,16 @@ async fn main_async_std() -> Result<(), Box<dyn Error>> {
         task,
     };
     use std::time::Instant;
-    let arg = args().nth(1);
+    let args = args().collect::<Vec<_>>();
+    let arg = args.len();
     // let mut stdin = stdin();
-    if arg.is_none() {
-        let mut tasks = Vec::with_capacity(NO_OF_TASKS);
+    if arg > 1 {
+        let no_of_clients = args[1].parse().unwrap();
+        let iterations = args
+            .get(2)
+            .map(|f| f.parse().expect("invalid number for iterations"))
+            .unwrap_or_else(|| 2_000_000_usize.div(no_of_clients));
+        let mut tasks = Vec::with_capacity(no_of_clients);
         let starting = Instant::now();
         for thread_id in 1..=tasks.capacity() {
             let tc = tasks.capacity();
@@ -119,7 +125,7 @@ async fn main_async_std() -> Result<(), Box<dyn Error>> {
                 let mut reader = BufReader::new(tcp.clone());
                 // let mut writer=BufWriter::new(tcp_write);
                 // const INTERVAL: u32 = 1_000;
-                for x in 0..TOTAL {
+                for x in 0..iterations {
                     writer.write_all(S.as_bytes()).await.unwrap();
                     writer.flush().await.unwrap();
                     // writeln!(writer, "{}", s).expect("Can't write");
@@ -127,7 +133,7 @@ async fn main_async_std() -> Result<(), Box<dyn Error>> {
                     buf.clear();
                     let c = reader.read_line(&mut buf).await.expect("Can't read");
                     // dbg!(c);
-                    if x % INTERVAL == 0 {
+                    if x % iterations == 0 {
                         let elapsed = timer.elapsed();
                         // println!(
                         //     "T:{:2},{:7} , {} ms, {} microSecond/op, {} op/s   <{}>",
@@ -161,10 +167,11 @@ async fn main_async_std() -> Result<(), Box<dyn Error>> {
             task.await;
         }
 
-        let x = ((NO_OF_TASKS * TOTAL as usize) as f64 / starting.elapsed().as_secs_f64()) as usize;
+        let x = ((no_of_clients * iterations as usize) as f64 / starting.elapsed().as_secs_f64())
+            as usize;
         println!("toke {:?} , {} op/s", starting.elapsed(), x);
     }
-    if arg.is_some() {
+    if arg == 0 {
         let tcp = TcpListener::bind("127.0.0.1:8080").await.unwrap();
         let no_clients = Arc::new(AtomicUsize::new(0));
         println!("Waiting for connection");
@@ -249,13 +256,13 @@ fn main() {
         //     .enable_all()
         //     .build()
         //     .unwrap();
-        match args().nth(1) {
-            None => tokio::runtime::Builder::new_current_thread()
+        match args().count() {
+            1 => tokio::runtime::Builder::new_multi_thread()
                 // .worker_threads(32)
                 .enable_all()
                 .build()
                 .unwrap(),
-            _ => tokio::runtime::Builder::new_multi_thread()
+            _ => tokio::runtime::Builder::new_current_thread()
                 // .worker_threads(32)
                 .enable_all()
                 .build()
@@ -264,8 +271,8 @@ fn main() {
         .block_on(main_tokio())
     }
 }
-const NO_OF_TASKS: usize = 400;
-const TOTAL: u32 = 5_000;
+// const NO_OF_TASKS: usize = 20;
+// const TOTAL: u32 = 100_000;
 const INTERVAL: u32 = 100_000;
 const S:&str= "You might encounter someone with a computer science background preferring to use the term hash table. Perl and Ruby strip that off and call them hashes. Lua does the opposite and uses the term table. Many communities name the structure after a metaphor, such as a dictionary (one term is being associated with a “definition”) or a map (programmers, following mathematicians, are mapping from one value to another). Other communities prefer naming based on the role that the structure plays. PHP describes them as associative arrays. JavaScript’s objects tend to be implemented as a key/value pair collection and so generic term object suffices. Static languages tend to name them according to how they are implemented. C++ and Java distinguish between a hash map and a tree map.\
 Rust uses the terms HashMap and BTreeMap to define two i and “associative array” refer to the abstract data type. “Hash table” refers to associative arrays implemented with a hash table. HashMaprefers to Rust’s implementation of hash tables.\
@@ -282,10 +289,17 @@ pub async fn main_tokio() {
         sync::Mutex,
         time::Instant,
     };
-    let arg = args().nth(1);
+    let args = args().collect::<Vec<_>>();
+    let arg = args.len();
+    println!("{:?}", args);
     // let mut stdin = stdin();
-    if arg.is_none() {
-        let mut tasks = Vec::with_capacity(NO_OF_TASKS);
+    if arg > 1 {
+        let no_of_clients = args[1].parse().unwrap();
+        let iterations = args
+            .get(2)
+            .map(|f| f.parse().expect("invalid number for iterations"))
+            .unwrap_or_else(|| 2_000_000_usize.div(no_of_clients));
+        let mut tasks = Vec::with_capacity(no_of_clients);
         let starting = Instant::now();
         for thread_id in 1..=tasks.capacity() {
             let tc = tasks.capacity();
@@ -305,7 +319,7 @@ pub async fn main_tokio() {
                 let mut reader = BufReader::new(reader);
                 // let mut writer = BufWriter::new(writer);
                 // let mut writer=BufWriter::new(tcp_write);
-                for x in 0..TOTAL {
+                for x in 0..iterations {
                     let mut t = Instant::now();
                     writer.write_all(S.as_bytes()).await.unwrap();
                     buf.clear();
@@ -316,7 +330,7 @@ pub async fn main_tokio() {
                     dur.add(t.elapsed());
 
                     // dbg!(c);
-                    if x % INTERVAL == 0 {
+                    if x % iterations == 0 {
                         let elapsed = timer.elapsed();
                         // println!(
                         //     "T:{:2},{:7} , {} ms, {} microSecond/op, {} op/s   <{}>",
@@ -360,8 +374,9 @@ pub async fn main_tokio() {
             }
             _total += dur.avarage();
         }
-        _total /= NO_OF_TASKS as u128;
-        let x = ((NO_OF_TASKS * TOTAL as usize) as f64 / starting.elapsed().as_secs_f64()) as usize;
+        _total /= no_of_clients as u128;
+        let x = ((no_of_clients * iterations as usize) as f64 / starting.elapsed().as_secs_f64())
+            as usize;
         println!("toke {:?} , {} op/s", starting.elapsed(), x);
         println!(
             "min {:?}. max {:?}. avg {:?}",
@@ -370,7 +385,7 @@ pub async fn main_tokio() {
             Duration::from_nanos(_total.try_into().unwrap())
         );
     }
-    if arg.is_some() {
+    if arg == 1 {
         let tcp = TcpListener::bind("127.0.0.1:8080").await.unwrap();
         let no_clients = Arc::new(AtomicUsize::new(0));
         println!("Waiting for connection");
