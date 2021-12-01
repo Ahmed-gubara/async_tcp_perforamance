@@ -19,6 +19,11 @@ const TOTAL: u32 = 20_000;
 const NO_OF_TASKS: usize = 200;
 const TOTAL: u32 = 10_000;
 ```
+#### Test 4
+```rust
+const NO_OF_TASKS: usize = 400;
+const TOTAL: u32 = 5_000;
+```
 
 # Results
 
@@ -50,6 +55,9 @@ go run gotcp/main.go
 #### test 3
     toke 34.6441539s , 57729 op/s
     min 84.7µs. max 93.5749ms. avg 3.417787ms
+#### test 4
+    toke 36.105499s , 55393 op/s
+    min 88.6µs. max 212.8036ms. avg 7.034237ms
 
 ## **C#**
 Execute with:
@@ -65,6 +73,9 @@ dotnet run --project DotnetTcp --confiuration release
 #### Test 3
     toke 38.8932215s , 51422 op/s
     min 710.1µs. max 34.6522ms. avg 3.817683ms
+#### Test 4
+    toke 35.3399902s , 56593 op/s
+    min 1.2658ms. max 179.1333ms. avg 6.859234ms
 
 ## **Rust**
 Execute with:
@@ -80,13 +91,16 @@ cargo run --manifest-path rust_tcp/Cargo.toml --release server
 #### Test 3
     toke 21.9012088s , 91319 op/s
     min 93.8µs. max 40.7531ms. avg 2.180891ms
+#### Test 4
+    toke 23.7767335s , 84115 op/s
+    min 135.4µs. max 48.0091ms. avg 4.732554ms
 
 
-| -- | Test 1 | Test 2 | Test 3 |
-| ------ | ------ | ------ | ------ |
-| Go | 61879 op/s | 60566 op/s | 57729 op/s |
-| C# | 46558 op/s | 53475 op/s | 51422 op/s |
-| Rust | 56527 op/s | 83439 op/s | 91319 op/s |
+| -- | Test 1 | Test 2 | Test 3 | Test 4 |
+| ------ | ------ | ------ | ------ | ------ |
+| Go | 61879 op/s | 60566 op/s | 57729 op/s | 55393 op/s |
+| C# | 46558 op/s | 53475 op/s | 51422 op/s | 56593 op/s |
+| Rust | 56527 op/s | 83439 op/s | 91319 op/s | 84115 op/s |
 
 
 
