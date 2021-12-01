@@ -63,7 +63,10 @@ go run gotcp/main.go
 #### 3200
     toke 31.8530088s , 62788 op/s
     min 171.8µs. max 1.4585892s. avg 45.88679ms
-
+#### 6400
+    toke 30.9174251s , 64584 op/s
+    min 958.6µs. max 2.3007664s. avg 86.579802ms
+    
 ## **C#**
 Execute with:
 ```
@@ -90,7 +93,10 @@ dotnet run --project DotnetTcp --confiuration release
 #### 3200
     toke 53.3028334s , 37521 op/s
     min 27.5547ms. max 295.6438ms. avg 75.07566ms
-    
+#### 6400
+    toke 53.7923761s , 37120 op/s
+    min 126.9605ms. max 359.694ms. avg 157.63542ms
+
 ## **Rust**
 Execute with:
 ```
@@ -117,6 +123,9 @@ cargo run --manifest-path rust_tcp/Cargo.toml --release
 #### 3200
     toke 21.7161339s , 92097 op/s
     min 1.911ms. max 238.1492ms. avg 33.780156ms
+#### 6400
+    toke 23.3318143s , 85582 op/s
+    min 11.1793ms. max 421.7852ms. avg 70.102181ms
 
 | -- | 20 | 100 | 200 | 400 | 800 | 1600 | 3200 |
 | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
