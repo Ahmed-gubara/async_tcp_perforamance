@@ -60,6 +60,9 @@ go run gotcp/main.go
 #### 1600
     toke 32.6184292s , 61315 op/s
     min 116.7µs. max 746.1308ms. avg 24.073898ms
+#### 3200
+    toke 31.8530088s , 62788 op/s
+    min 171.8µs. max 1.4585892s. avg 45.88679ms
 
 ## **C#**
 Execute with:
@@ -84,7 +87,10 @@ dotnet run --project DotnetTcp --confiuration release
 #### 1600
     toke 44.1282371s , 45322 op/s
     min 8.2425ms. max 156.7069ms. avg 33.518023ms
-
+#### 3200
+    toke 53.3028334s , 37521 op/s
+    min 27.5547ms. max 295.6438ms. avg 75.07566ms
+    
 ## **Rust**
 Execute with:
 ```
@@ -108,12 +114,15 @@ cargo run --manifest-path rust_tcp/Cargo.toml --release
 #### 1600
     toke 22.1278196s , 90383 op/s
     min 685.8µs. max 130.6104ms. avg 17.134663ms
+#### 3200
+    toke 21.7161339s , 92097 op/s
+    min 1.911ms. max 238.1492ms. avg 33.780156ms
 
-| -- | 20 | 100 | 200 | 400 | 800 | 1600 |
-| ------ | ------ | ------ | ------ | ------ | ------ | ------ |
-| Go | 61879 op/s | 60566 op/s | 57729 op/s | 55393 op/s | 59623 op/s | 61315 op/s |
-| C# | 46558 op/s | 53475 op/s | 51422 op/s | 56593 op/s | 50223 op/s | 45322 op/s |
-| Rust | 56527 op/s | 83439 op/s | 91319 op/s | 84115 op/s | 89642 op/s | 90383 op/s |
+| -- | 20 | 100 | 200 | 400 | 800 | 1600 | 3200 |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| Go | 61879 op/s | 60566 op/s | 57729 op/s | 55393 op/s | 59623 op/s | 61315 op/s | 62788 op/s |
+| C# | 46558 op/s | 53475 op/s | 51422 op/s | 56593 op/s | 50223 op/s | 45322 op/s | 37521 op/s |
+| Rust | 56527 op/s | 83439 op/s | 91319 op/s | 84115 op/s | 89642 op/s | 90383 op/s | 92097 op/s |
 
 
 
