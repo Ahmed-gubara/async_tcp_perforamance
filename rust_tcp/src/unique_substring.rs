@@ -3,12 +3,14 @@ use std::{
     str::Chars,
     time::SystemTime,
 };
+
 pub fn find_longest_unique_substring(
     string: &[char],
     // char_indexes: &'a mut [Option<usize>],
     // offset: usize,
-) -> &[char] {
-    let mut char_indexes: BTreeMap<&char, usize> = BTreeMap::new();
+) -> String {
+    // let mut char_indexes: BTreeMap<&char, usize> = BTreeMap::new();
+    let mut char_indexes: hashbrown::HashMap<&char, usize> = hashbrown::HashMap::new();
     // let now = SystemTime::now();
     // // char_indexes.fill(None);
     // println!(
@@ -59,8 +61,10 @@ pub fn find_longest_unique_substring(
         }
     }
     match (match_index, match_length) {
-        (0, 0) => &[' '; 0],
-        _ => &string[match_index..(match_length + match_index)],
+        (0, 0) => "".to_string(),
+        _ => string[match_index..(match_length + match_index)]
+            .iter()
+            .collect(),
     }
 }
 pub fn find_longest_unique_substring2(

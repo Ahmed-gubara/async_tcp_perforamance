@@ -6,6 +6,7 @@ pub mod unique_substring;
 // use bumpalo::Bump;
 
 use async_std::{net::TcpListener, prelude::*, task};
+use dialoguer::{theme::ColorfulTheme, Select};
 use unique_substring::find_longest_unique_substring;
 
 use crate::unique_substring::find_longest_unique_substring_alt;
@@ -26,7 +27,7 @@ use std::{
 };
 
 // #[global_allocator]
-// static GLOBAL: Jemalloc = Jemalloc;
+// static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 struct Dur {
     max: Duration,
     min: Duration,
@@ -171,7 +172,7 @@ async fn main_async_std() -> Result<(), Box<dyn Error>> {
             as usize;
         println!("toke {:?} , {} op/s", starting.elapsed(), x);
     }
-    if arg == 0 {
+    if arg == 1 {
         let tcp = TcpListener::bind("127.0.0.1:8080").await.unwrap();
         let no_clients = Arc::new(AtomicUsize::new(0));
         println!("Waiting for connection");
@@ -220,9 +221,8 @@ async fn main_async_std() -> Result<(), Box<dyn Error>> {
                             // if char_indexes.len()< max{ char_indexes.resize(max  , None)}
                             // char_indexes.insert(max , None);
                             // Box::new([Option::<usize>::None; (char::MAX as u16) as usize]);
-                            let result = find_longest_unique_substring(&vec); //, char_indexes.deref_mut(), 0);
 
-                            let result = result.iter().collect::<String>();
+                            let result = find_longest_unique_substring(&vec); //, char_indexes.deref_mut(), 0);
 
                             // let result = &st[..9];
                             // result.to_owned()
@@ -247,7 +247,14 @@ async fn main_async_std() -> Result<(), Box<dyn Error>> {
 }
 
 fn main() {
-    let use_tokio = true;
+    let runtimes = ["Tokio", "Async-std"];
+
+    let selected = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Choose runtime:")
+        .items(&runtimes)
+        .interact()
+        .unwrap();
+    let use_tokio = selected == 0;
     if !use_tokio {
         task::block_on(main_async_std()).unwrap()
     } else if true {
@@ -257,12 +264,19 @@ fn main() {
         //     .build()
         //     .unwrap();
         match args().count() {
-            1 => tokio::runtime::Builder::new_multi_thread()
+            1 => {
+                let mut tok = tokio::runtime::Builder::new_multi_thread();
+                // let cpu = dialoguer::Input::<usize>::new()
+                //     .with_prompt("cpu cores")
+                //     .default(0)
+                //     .interact()
+                //     .unwrap();
+
+                tok.enable_all().build().unwrap()
+
                 // .worker_threads(32)
-                .enable_all()
-                .build()
-                .unwrap(),
-            _ => tokio::runtime::Builder::new_current_thread()
+            }
+            _ => tokio::runtime::Builder::new_multi_thread()
                 // .worker_threads(32)
                 .enable_all()
                 .build()
@@ -433,9 +447,9 @@ pub async fn main_tokio() {
                             // if char_indexes.len()< max{ char_indexes.resize(max  , None)}
                             // char_indexes.insert(max , None);
                             // Box::new([Option::<usize>::None; (char::MAX as u16) as usize]);
-                            let result = find_longest_unique_substring(&vec); //, char_indexes.deref_mut(), 0);
+                            let result = { find_longest_unique_substring(&vec) };
 
-                            let result = result.iter().collect::<String>();
+                            // let result = find_longest_unique_substring(&vec); //, char_indexes.deref_mut(), 0);
 
                             // let result = &st[..9];
                             // result.to_owned()

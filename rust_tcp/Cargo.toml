@@ -19,7 +19,8 @@ rpath = false
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 # jemallocator = "0.3.2"
+hashbrown = "0.12.0"
 # bumpalo  = { version = "3.8.0", features = ["collections","boxed"] }
 async-std = "1.10.0"
-
-
+dialoguer = "0.10.0"
+console = "0.15.0"
